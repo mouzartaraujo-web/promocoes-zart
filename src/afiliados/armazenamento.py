@@ -40,7 +40,10 @@ class ErroRespostaSupabase(SupabaseError):
 
 def _get_supabase_url() -> str:
     """Retorna SUPABASE_URL do ambiente."""
-    return os.getenv("SUPABASE_URL", "")
+    url = os.getenv("SUPABASE_URL", "").strip()
+    if url and not url.startswith(("http://", "https://")):
+        logger.warning("SUPABASE_URL não tem esquema http/https: %s", url[:50])
+    return url
 
 
 def _get_supabase_key() -> str:
@@ -90,7 +93,14 @@ def _requisicao(
     """
     _validar_credenciais()
 
-    url = f"{_get_supabase_url()}/rest/v1/{tabela}"
+    base_url = _get_supabase_url()
+    if not base_url.startswith(("http://", "https://")):
+        raise ErroCredenciaisSupabase(
+            f"SUPABASE_URL inválida: '{base_url[:50]}...'. "
+            "Deve começar com http:// ou https://"
+        )
+
+    url = f"{base_url}/rest/v1/{tabela}"
 
     try:
         resposta = requests.request(
@@ -104,6 +114,11 @@ def _requisicao(
     except requests.exceptions.Timeout as exc:
         raise ErroRedeSupabase("Timeout ao consultar Supabase") from exc
     except requests.exceptions.ConnectionError as exc:
+        if "No connection adapters" in str(exc):
+            raise ErroCredenciaisSupabase(
+                f"URL do Supabase inválida: '{url[:50]}...'. "
+                "Verifique se SUPABASE_URL começa com https://"
+            ) from exc
         raise ErroRedeSupabase("Erro de conexão com o Supabase") from exc
     except requests.exceptions.HTTPError as exc:
         raise ErroRespostaSupabase(
