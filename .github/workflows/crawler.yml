@@ -31,4 +31,5 @@ jobs:
           ML_CLIENT_SECRET: ${{ secrets.ML_CLIENT_SECRET }}
           ML_AFFILIATE_TAG: ${{ secrets.ML_AFFILIATE_TAG }}
           ML_AFFILIATE_WORD: ${{ secrets.ML_AFFILIATE_WORD }}
+          PYTHONPATH: src
         run: python run_crawler.py
