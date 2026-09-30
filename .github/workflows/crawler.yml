@@ -4,7 +4,12 @@ on:
   schedule:
     # Executa a cada hora cheia (0 * * * *)
     - cron: '0 * * * *'
-  workflow_dispatch: # Permite disparar manualmente no GitHub
+  workflow_dispatch:
+    inputs:
+      debug:
+        type: boolean
+        description: 'Enable debug logging'
+        default: false
 
 jobs:
   run-crawler:
