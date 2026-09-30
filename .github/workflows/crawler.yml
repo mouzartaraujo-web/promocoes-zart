@@ -11,19 +11,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: Checkout do código
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configurar Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
 
-      - name: Instalar Dependências
+      - name: Install Dependencies
         run: pip install -r requirements.txt
 
-      - name: Rodar Crawler PromoZart
+      - name: Run Crawler
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
@@ -31,30 +31,4 @@ jobs:
           ML_CLIENT_SECRET: ${{ secrets.ML_CLIENT_SECRET }}
           ML_AFFILIATE_TAG: ${{ secrets.ML_AFFILIATE_TAG }}
           ML_AFFILIATE_WORD: ${{ secrets.ML_AFFILIATE_WORD }}
-        run: |
-          python -c "
-import logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
-# Ler URLs do arquivo de configuração
-with open('config/urls_monitoradas.txt', 'r') as f:
-    urls = [line.strip() for line in f if line.strip() and not line.startswith('#')]
-
-print(f'URLs carregadas: {len(urls)}')
-for u in urls:
-    print(f'  - {u}')
-
-from afiliados import orquestrador
-
-ofertas = orquestrador.rodar(
-    urls_mercado_livre=urls,
-    limite_queda_pct=10.0,
-    enviar_whatsapp=False
-)
-print(f'Ofertas encontradas: {len(ofertas)}')
-for o in ofertas:
-    titulo = o['titulo'][:60]
-    queda = o['queda_pct']
-    pid = o['produto_id']
-    print(f'  - {titulo} | {queda}% OFF | {pid}')
-"
+        run: python run_crawler.py
