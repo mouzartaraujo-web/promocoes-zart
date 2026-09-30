@@ -583,6 +583,26 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
     color: #c62828;
 }
 
+/* Platform logo (logo in image corner) */
+.platform-logo-container {
+    position: absolute;
+    bottom: 0.75rem;
+    left: 0.75rem;
+    z-index: 2;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: var(--radius-sm);
+    padding: 0.375rem;
+    box-shadow: var(--shadow-sm);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.platform-logo {
+    display: block;
+    width: 28px;
+    height: 28px;
+}
+
 /* Pricing section */
 .offer-pricing {
     display: flex;

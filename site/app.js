@@ -298,18 +298,38 @@ function updateResultsInfo() {
 // ========================================
 // Render Functions
 // ========================================
-function getPlatformTag(platform) {
-    const tags = {
-        mercado_livre: '<span class="platform-tag ml" aria-label="Mercado Livre">ML</span>',
-        shopee: '<span class="platform-tag shopee" aria-label="Shopee">Shopee</span>'
+function getPlatformLogo(platform) {
+    const logos = {
+        mercado_livre: `
+            <svg class="platform-logo ml" aria-label="Mercado Livre" viewBox="0 0 160 160" width="24" height="24">
+                <path fill="#FFE600" d="M134.7 38.9c-3.9-2.4-8.4-3.6-13.2-3.6-8.2 0-14.8 5.3-17.1 12.6-.1.2-.3.4-.4.5-.2-.1-.3-.3-.4-.5C95.2 44.2 88.6 38.9 80.4 38.9c-7.8 0-14.2 4.6-17.2 11.3l-1.9 4.2H32.6l26.8 63.2c.7 1.6.6 3.4-.6 4.6-1.6 1.6-4.1 1.6-5.7 0-1.2-1.2-1.3-3.1-.6-4.6l26.8-63.2H21.3c-4.7 0-8.5-3.8-8.5-8.5V38.7c0-4.7 3.8-8.5 8.5-8.5h90.6c4.7 0 8.5 3.8 8.5 8.5v3.2l-3.6 8.5c-.8 1.8-.4 4 .9 5.2 1.8 1.8 4.5 1.8 6.3 0 1.2-1.2 1.6-3.1.9-4.7L123 45.9c3.7-2.9 5.7-7.2 5.7-12.2 0-6.3-4.1-11.5-9.9-13.4l-1.4-.3zm-41.7 67.6l-16.4-38.5h33.7l-16.4 38.5h-1zm-25.9-38.5l15.8 38.5h-31.7l15.8-38.5h0z"/>
+            </svg>
+        `,
+        shopee: `
+            <svg class="platform-logo shopee" aria-label="Shopee" viewBox="0 0 24 24" width="24" height="24">
+                <path fill="#EE4D2D" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v2h-2zm0 4h2v6h-2z"/>
+            </svg>
+        `,
+        amazon: `
+            <svg class="platform-logo amazon" aria-label="Amazon" viewBox="0 0 24 24" width="24" height="24">
+                <path fill="#FF9900" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v2h-2zm0 4h2v6h-2z"/>
+            </svg>
+        `,
+        magazineluiza: `
+            <svg class="platform-logo magazineluiza" aria-label="Magazine Luiza" viewBox="0 0 24 24" width="24" height="24">
+                <path fill="#1D1D1D" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v2h-2zm0 4h2v6h-2z"/>
+            </svg>
+        `
     };
-    return tags[platform] || '';
+    return logos[platform] || '';
 }
 
 function getPlatformBadge(platform) {
     const badges = {
-        mercado_livre: '<span class="platform-badge ml">ML</span>',
-        shopee: '<span class="platform-badge shopee">Shopee</span>'
+        mercado_livre: '<span class="platform-badge ml">Mercado Livre</span>',
+        shopee: '<span class="platform-badge shopee">Shopee</span>',
+        amazon: '<span class="platform-badge amazon">Amazon</span>',
+        magazineluiza: '<span class="platform-badge magazineluiza">Magazine Luiza</span>'
     };
     return badges[platform] || '';
 }
@@ -328,7 +348,8 @@ function createOfferCard(offer) {
     const priceOld = formatPrice(offer.preco_anterior);
     const discountText = hasDiscount ? formatDiscount(offer.queda_pct) : '';
     const createdAt = formatRelativeTime(offer.criado_em);
-    const platformTag = getPlatformTag(offer.plataforma);
+    const platformLogo = getPlatformLogo(offer.plataforma);
+    const platformBadge = getPlatformBadge(offer.plataforma);
     const imageUrl = offer.imagem || '';
 
     let discountOverlay = '';
@@ -341,14 +362,17 @@ function createOfferCard(offer) {
         : `<div class="image-fallback-wrapper" style="display:${imageUrl ? 'none' : 'block'};"><svg class="image-fallback" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/><path d="M21 3l-7 7m-5 5l-7 7"/></svg></div>`;
 
     article.innerHTML = `
-        <div class="offer-image" aria-hidden="true"         >
+        <div class="offer-image" aria-hidden="true">
             ${discountOverlay}
             ${imgHtml}
+            <div class="platform-logo-container" aria-hidden="true">
+                ${platformLogo}
+            </div>
         </div>
         <div class="offer-content">
             <div class="offer-header">
                 <h3 class="offer-title">${title}</h3>
-                ${getPlatformBadge(offer.plataforma)}
+                ${platformBadge}
             </div>
             <div class="offer-pricing">
                 <div class="price-row">
@@ -503,6 +527,27 @@ async function init() {
     setupBannerHandlers();
     setupEventListeners();
 
+    // Force clear stale filters on load (dev/debug)
+    const saved = localStorage.getItem('promozart-filters');
+    if (saved) {
+        try {
+            const parsed = JSON.parse(saved);
+            if (parsed.discountMin && Number(parsed.discountMin) > 15) {
+                console.log('Clearing stale high discount filter:', parsed.discountMin);
+                localStorage.removeItem('promozart-filters');
+                currentFilters.discountMin = '';
+            }
+        } catch { }
+    }
+
+    // Clear filters via URL parameter (e.g., ?clear=1)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('clear') === '1') {
+        localStorage.removeItem('promozart-filters');
+        currentFilters.discountMin = '';
+        window.history.replaceState({}, '', window.location.pathname);
+    }
+
     // Restore saved filters
     const savedFilters = loadFilters();
     if (savedFilters) {
@@ -537,17 +582,21 @@ async function init() {
     setupBannerHandlers();
     setupEventListeners();
 
-    // Restore saved filters
-    const savedFilters = loadFilters();
-    if (savedFilters) {
-        currentFilters = { ...currentFilters, ...savedFilters };
-    }
-    updateUIFromFilters();
-
     try {
         allOffers = await fetchOffers();
         hideLoading();
         applyFilters();
+
+        // Auto-clear filters if no results but we have offers before filtering
+        if (filteredOffers.length === 0 && allOffers.length > 0) {
+            const hasActiveFilters = currentFilters.search || currentFilters.platform || 
+                                     currentFilters.discountMin || currentFilters.timeRange;
+            if (hasActiveFilters) {
+                console.log('No results with active filters, clearing filters...');
+                clearAllFilters();
+                // saveFilters() is called inside applyFilters()
+            }
+        }
     } catch (error) {
         hideLoading();
         const offersEl = document.getElementById('offers');
