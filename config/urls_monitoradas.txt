@@ -1,13 +1,94 @@
 # URLs monitoradas pelo crawler PromoZart
 # Formato: uma URL por linha, linhas iniciadas com # sao comentarios
 # Categorias: Informatica, Casa e Construcao, Ferramentas, Tecnologia e Eletronicos
+#
+# COMO ADICIONAR NOVOS PRODUTOS:
+# 1. Acesse o produto no Mercado Livre
+# 2. Copie o ID do produto da URL (formato: MLB + numeros, ex: MLB1234567)
+# 3. Adicione a linha: https://www.mercadolivre.com.br/p/MLBXXXXXXXX
+# 4. O crawler fara a primeira varredura gravando o preco base
+# 4. Nas proximas varreduras, se houver desconto >= 5%, a oferta entra na vitrine
 
-# ===== PRODUTOS ATIVOS (IDs VALIDOS) =====
+# ===== PRODUTOS ATIVOS (IDs VALIDOS CONFIRMADOS) =====
 # Aspirador WAP GTW Inox 12L 1400W
 https://www.mercadolivre.com.br/p/MLB6339958
 
 # Refletor LED Lumanti 100W
 https://www.mercadolivre.com.br/p/MLB70273909
+
+# ===== INFORMATICA =====
+# Teclados Mecanicos
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Teclado Mecanico Redragon Kumara
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Teclado Mecanico HyperX Alloy
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Teclado Logitech MX Keys
+
+# Mouses Gamer
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Mouse Logitech G502 Hero
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Mouse Razer DeathAdder V2
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Mouse Sem Fio Logitech MX Master 3
+
+# Armazenamento
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # SSD NVMe 1TB Samsung 980
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # SSD NVMe 1TB Kingston KC3000
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # HD Externo 2TB Seagate
+
+# Monitores
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Monitor Samsung 27" 144Hz
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Monitor LG UltraGear 24"
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Monitor Dell 27" 4K
+
+# ===== CASA E CONSTRUCAO =====
+# Iluminacao Inteligente
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Lampada Smart WiFi 10W RGB
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Fita LED Smart 5m
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Spot LED Smart 7W
+
+# Eletrodomesticos
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Air Fryer 5L Mondial
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Aspirador Robo Xiaomi
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Liquidificador Philco 1400W
+
+# Ferramentas Eletricas
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Parafusadeira Bosch 12V
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Furadeira Impacto Bosch
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Serra Circular 7-1/4
+
+# ===== FERRAMENTAS =====
+# Conjuntos
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Jogo Chaves Combinadas 26p
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Kit Chaves de Fenda 20p
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Jogo Soquetes 1/2 40p
+
+# Medicao
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Nivel Laser Bosch 360
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Trena Laser 50m
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Multimetro Digital Fluke
+
+# ===== TECNOLOGIA E ELETRONICOS =====
+# Audio
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Fone Bluetooth JBL Tune 510
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Fone TWS Samsung Buds2
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Headset Gamer HyperX Cloud
+
+# Carregadores
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Carregador GaN 65W Baseus
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Power Bank 20000mAh Anker
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Carregador Wireless 15W
+
+# Wearables
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Smartwatch Samsung Galaxy Watch
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Xiaomi Band 8 Pro
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Apple Watch SE
+
+# Celulares
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Samsung Galaxy A15 128GB
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Motorola Edge 40 Neo
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # iPhone 13 128GB
+
+# TVs
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Smart TV Samsung 50" Crystal UHD
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Smart TV LG 43" NanoCell
+# https://www.mercadolivre.com.br/p/MLBXXXXXXXX  # Smart TV TCL 55" QLED
 
 # ===== BUSCA POR TERMOS GENERICOS =====
 # O crawler tambem fara buscas por termos genericos para encontrar novos produtos

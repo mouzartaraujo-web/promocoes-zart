@@ -6,6 +6,7 @@ import time
 from typing import Any
 
 import requests
+from bs4 import BeautifulSoup
 
 from afiliados.http_utils import retry_com_backoff
 
@@ -34,6 +35,165 @@ class ErroCredenciaisMercadoLivre(MercadoLivreError):
     """Credenciais do Mercado Livre não configuradas."""
 
     pass
+
+
+# Constantes
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+BASE_HEADERS = {"User-Agent": USER_AGENT, "Accept": "application/json, text/html, */*"}
+
+# Constantes
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+BASE_HEADERS = {"User-Agent": USER_AGENT, "Accept": "application/json, text/html, */*"}
+
+_TOKEN_CACHE: dict[str, Any] = {}
+
+
+@retry_com_backoff(max_tentativas=3, backoff_base=1.0)
+def _requisicao_busca_publica(termo: str, limite: int) -> dict[str, Any]:
+    """
+    Faz requisição para endpoint público de busca do Mercado Livre (sem OAuth).
+    
+    Args:
+        termo: Termo de busca.
+        limite: Limite de resultados.
+    
+    Returns:
+        JSON da resposta.
+    
+    Raises:
+        ErroRedeMercadoLivre: Falha de conexão.
+        ErroRespostaMercadoLivre: Erro HTTP ou resposta inválida.
+    """
+    url = "https://api.mercadolibre.com/sites/MLB/search"
+    params: dict[str, str | int] = {"q": termo, "limit": limite}
+    headers = BASE_HEADERS.copy()
+    
+    try:
+        resposta = requests.get(url, params=params, headers=headers, timeout=15)
+        resposta.raise_for_status()
+    except requests.exceptions.Timeout as exc:
+        raise ErroRedeMercadoLivre("Timeout ao consultar API pública do Mercado Livre") from exc
+    except requests.exceptions.ConnectionError as exc:
+        raise ErroRedeMercadoLivre("Erro de conexão com a API do Mercado Livre") from exc
+    except requests.exceptions.HTTPError as exc:
+        corpo = exc.response.text if exc.response is not None else "sem resposta"
+        logger.warning(
+            "Erro HTTP na busca pública: status=%d, url=%s, resposta=%s",
+            exc.response.status_code if exc.response is not None else -1,
+            exc.response.url if exc.response is not None else "desconhecida",
+            corpo,
+        )
+        raise ErroRespostaMercadoLivre(
+            f"Erro HTTP na API pública: {exc.response.status_code} - {corpo}"
+        ) from exc
+    except requests.exceptions.RequestException as exc:
+        raise ErroRedeMercadoLivre(f"Erro na requisição pública: {exc}") from exc
+    
+    try:
+        dados: dict[str, Any] = resposta.json()
+    except ValueError as exc:
+        raise ErroRespostaMercadoLivre("Resposta da API pública não é JSON válido") from exc
+    
+    return dados
+
+
+@retry_com_backoff(max_tentativas=2, backoff_base=1.5)
+def _requisicao_html_busca(termo: str) -> str:
+    """
+    Faz scraping leve da página de busca do Mercado Livre (HTML).
+    
+    Args:
+        termo: Termo de busca.
+    
+    Returns:
+        HTML da página de resultados.
+    
+    Raises:
+        ErroRedeMercadoLivre: Falha de conexão.
+        ErroRespostaMercadoLivre: Erro HTTP.
+    """
+    termo_encoded = termo.replace(" ", "+")
+    url = f"https://lista.mercadolivre.com.br/{termo_encoded}"
+    headers = BASE_HEADERS.copy()
+    headers["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+    
+    try:
+        resposta = requests.get(url, headers=headers, timeout=20)
+        resposta.raise_for_status()
+    except requests.exceptions.Timeout as exc:
+        raise ErroRedeMercadoLivre("Timeout ao acessar página de busca do Mercado Livre") from exc
+    except requests.exceptions.ConnectionError as exc:
+        raise ErroRedeMercadoLivre("Erro de conexão com Mercado Livre") from exc
+    except requests.exceptions.HTTPError as exc:
+        corpo = exc.response.text if exc.response is not None else "sem resposta"
+        raise ErroRespostaMercadoLivre(
+            f"Erro HTTP na página de busca: {exc.response.status_code} - {corpo}"
+        ) from exc
+    except requests.exceptions.RequestException as exc:
+        raise ErroRedeMercadoLivre(f"Erro na requisição HTML: {exc}") from exc
+    
+    return resposta.text
+
+
+def _parsear_html_resultados(html: str) -> list[dict]:
+    """
+    Extrai produtos do HTML da página de busca do Mercado Livre.
+    
+    Args:
+        html: HTML da página de resultados.
+    
+    Returns:
+        Lista de produtos extraídos.
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    produtos = []
+    
+    # Seletores para os cards de produto (atualizados para layout atual do ML)
+    cards = soup.select("li.ui-search-layout__item, li.ui-search-result__wrapper, div.ui-search-result")
+    
+    for card in cards:
+        try:
+            # Link do produto
+            link_elem = card.select_one("a.ui-search-link, a.ui-search-result__link, a[href*='/MLB-']")
+            if not link_elem or not link_elem.get("href"):
+                continue
+            link = link_elem["href"]
+            if "mercadolivre.com.br" not in link:
+                continue
+            
+            # ID do produto (MLB-xxxxx)
+            import re
+            id_match = re.search(r"(MLB\d+)", link)
+            produto_id = id_match.group(1) if id_match else None
+            
+            # Título
+            title_elem = card.select_one("h2.ui-search-item__title, h2.poly-component__title, h2.ui-search-item__group__element")
+            if not title_elem:
+                title_elem = card.select_one("a.ui-search-link h2, a.ui-search-result__link h2")
+            titulo = title_elem.get_text(strip=True) if title_elem else None
+            
+            # Preço
+            price_elem = card.select_one("span.andes-money-amount__fraction, span.price-tag-fraction, div.price-tag span")
+            preco = None
+            if price_elem:
+                preco_text = price_elem.get_text(strip=True).replace(".", "").replace(",", ".")
+                try:
+                    preco = float(preco_text)
+                except ValueError:
+                    pass
+            
+            if produto_id and titulo and preco is not None:
+                produtos.append({
+                    "id": produto_id,
+                    "titulo": titulo,
+                    "preco": preco,
+                    "link": link,
+                })
+        except Exception as e:
+            logger.debug("Erro ao parsear card: %s", e)
+            continue
+    
+    return produtos
 
 
 _TOKEN_CACHE: dict[str, Any] = {}
@@ -76,7 +236,6 @@ def _requisicao_token() -> dict[str, Any]:
     except requests.exceptions.ConnectionError as exc:
         raise ErroRedeMercadoLivre("Erro de conexão ao obter token OAuth") from exc
     except requests.exceptions.HTTPError as exc:
-        # Loga corpo da resposta sem expor o secret
         corpo = exc.response.text if exc.response is not None else "sem resposta"
         logger.error(
             "Erro HTTP ao obter token OAuth: status=%d, resposta=%s",
@@ -163,7 +322,6 @@ def _requisicao_busca(token: str, termo: str, limite: int) -> dict[str, Any]:
         if exc.response.status_code == 401:
             _TOKEN_CACHE.clear()
             raise ErroRespostaMercadoLivre("Token expirado ou inválido, cache limpo") from exc
-        # Loga corpo da resposta 403/outros erros sem expor token
         corpo = exc.response.text if exc.response is not None else "sem resposta"
         logger.error(
             "Erro HTTP na busca: status=%d, url=%s, resposta=%s",
@@ -187,39 +345,81 @@ def _requisicao_busca(token: str, termo: str, limite: int) -> dict[str, Any]:
 
 def buscar_produtos(termo: str, limite: int = 20) -> list[dict]:
     """
-    Busca produtos na API pública do Mercado Livre.
-
+    Busca produtos no Mercado Livre com fallback em cascata:
+    1. API pública (sem OAuth)
+    2. HTML scraping da página de busca
+    3. API oficial com OAuth (se credenciais disponíveis)
+    
     Args:
         termo: Termo de busca.
         limite: Número máximo de resultados (padrão: 20).
-
+    
     Returns:
         Lista de dicionários com id, titulo, preco e link.
-
+    
     Raises:
-        ErroCredenciaisMercadoLivre: Se credenciais não configuradas.
         ErroRedeMercadoLivre: Em caso de falha de conexão ou timeout.
-        ErroRespostaMercadoLivre: Se a API retornar erro ou formato inesperado.
+        ErroRespostaMercadoLivre: Se todas as tentativas falharem.
     """
     logger.info("Buscando produtos no Mercado Livre: termo='%s', limite=%d", termo, limite)
-
-    token = _obter_token()
-    dados = _requisicao_busca(token, termo, limite)
-
-    resultados = dados.get("results", [])
-    if not isinstance(resultados, list):
-        raise ErroRespostaMercadoLivre("Campo 'results' não é uma lista")
-
-    produtos = []
-    for item in resultados:
-        produto = {
-            "id": item.get("id"),
-            "titulo": item.get("title"),
-            "preco": item.get("price"),
-            "link": item.get("permalink"),
-        }
-        if all(produto.values()):
-            produtos.append(produto)
-
-    logger.info("Encontrados %d produtos válidos no Mercado Livre", len(produtos))
-    return produtos
+    
+    # 1. Tentar API pública (sem OAuth)
+    try:
+        logger.debug("Tentando API pública do Mercado Livre")
+        dados = _requisicao_busca_publica(termo, limite)
+        resultados = dados.get("results", [])
+        if isinstance(resultados, list) and resultados:
+            produtos = []
+            for item in resultados:
+                produto = {
+                    "id": item.get("id"),
+                    "titulo": item.get("title"),
+                    "preco": item.get("price"),
+                    "link": item.get("permalink"),
+                }
+                if all(produto.values()):
+                    produtos.append(produto)
+            logger.info("API pública: %d produtos válidos", len(produtos))
+            if produtos:
+                return produtos
+    except (ErroRedeMercadoLivre, ErroRespostaMercadoLivre) as e:
+        logger.warning("API pública falhou: %s", e)
+    
+    # 2. HTML scraping fallback
+    try:
+        logger.debug("Tentando HTML scraping da página de busca")
+        html = _requisicao_html_busca(termo)
+        produtos = _parsear_html_resultados(html)
+        if produtos:
+            logger.info("HTML scraping: %d produtos válidos", len(produtos))
+            return produtos[:limite]
+        logger.warning("HTML scraping não encontrou produtos válidos")
+    except (ErroRedeMercadoLivre, ErroRespostaMercadoLivre) as e:
+        logger.warning("HTML scraping falhou: %s", e)
+    
+    # 3. Fallback para API oficial com OAuth (se credenciais disponíveis)
+    try:
+        logger.debug("Tentando API oficial com OAuth")
+        token = _obter_token()
+        dados = _requisicao_busca(token, termo, limite)
+        resultados = dados.get("results", [])
+        if isinstance(resultados, list) and resultados:
+            produtos = []
+            for item in resultados:
+                produto = {
+                    "id": item.get("id"),
+                    "titulo": item.get("title"),
+                    "preco": item.get("price"),
+                    "link": item.get("permalink"),
+                }
+                if all(produto.values()):
+                    produtos.append(produto)
+            logger.info("API OAuth: %d produtos válidos", len(produtos))
+            return produtos
+    except ErroCredenciaisMercadoLivre:
+        logger.info("Credenciais OAuth não configuradas, pulando API oficial")
+    except (ErroRedeMercadoLivre, ErroRespostaMercadoLivre) as e:
+        logger.warning("API OAuth falhou: %s", e)
+    
+    logger.warning("Todas as tentativas de busca falharam para termo: %s", termo)
+    return []
