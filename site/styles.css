@@ -475,12 +475,6 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
     object-fit: contain;
 }
 
-.offer-image .image-fallback {
-    width: 48px;
-    height: 48px;
-    color: var(--color-accent);
-}
-
 /* Discount overlay badge */
 .discount-overlay {
     position: absolute;

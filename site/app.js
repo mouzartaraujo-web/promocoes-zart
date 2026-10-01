@@ -352,14 +352,19 @@ function createOfferCard(offer) {
     const platformBadge = getPlatformBadge(offer.plataforma);
     const imageUrl = offer.imagem || '';
 
+    // Normaliza URL da imagem: adiciona https: se começar com //
+    const normalizedImageUrl = imageUrl.startsWith('//')
+        ? 'https:' + imageUrl
+        : imageUrl;
+
     let discountOverlay = '';
     if (discountText) {
         discountOverlay = `<div class="discount-overlay">${discountText}</div>`;
     }
 
-    const imgHtml = imageUrl
-        ? `<img src="${escapeHtml(imageUrl)}" alt="${title}" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">`
-        : `<div class="image-fallback-wrapper" style="display:${imageUrl ? 'none' : 'block'};"><svg class="image-fallback" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/><path d="M21 3l-7 7m-5 5l-7 7"/></svg></div>`;
+    const imgHtml = normalizedImageUrl
+        ? `<img src="${escapeHtml(normalizedImageUrl)}" alt="${title}" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iY3VycmVudENvbG9yIiBzdHJva2Utd2lkdGg9IjEuNSIgYXJpYS1oaWRkZW49InRydWUiPjxwYXRoIGQ9Ik0yMSAyMWwtNi02bTItNWE3IDcgMCAxMTEtMTQgMCA3IDcgMCAwIDE0IDB6Ii8+PHBhdGggZD0iTTIxIDNsLTcgN20tNSA1bC03IDciLz48L3N2Zz4='; this.alt='Imagem indisponível';">`
+        : `<div class="image-fallback-wrapper"><svg class="image-fallback" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/><path d="M21 3l-7 7m-5 5l-7 7"/></svg></div>`;
 
     article.innerHTML = `
         <div class="offer-image" aria-hidden="true">

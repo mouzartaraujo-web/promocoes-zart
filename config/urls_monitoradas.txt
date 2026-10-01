@@ -2,80 +2,6 @@
 # Formato: uma URL por linha, linhas iniciadas com # sao comentarios
 # Categorias: Informatica, Casa e Construcao, Ferramentas, Tecnologia e Eletronicos
 
-# ===== INFORMATICA =====
-# Teclados
-# https://www.mercadolivre.com.br/p/MLB1234567  # Teclado Mecanico Redragon
-# https://www.mercadolivre.com.br/p/MLB2345678  # Teclado Logitech MX Keys
-# https://www.mercadolivre.com.br/p/MLB3456789  # Teclado Mecanico HyperX
-
-# Mouses
-# https://www.mercadolivre.com.br/p/MLB4567890  # Mouse Logitech G502
-# https://www.mercadolivre.com.br/p/MLB5678901  # Mouse Razer DeathAdder
-# https://www.mercadolivre.com.br/p/MLB6789012  # Mouse Sem Fio Logitech MX Master
-
-# Armazenamento
-# https://www.mercadolivre.com.br/p/MLB7890123  # SSD NVMe 1TB Samsung 980
-# https://www.mercadolivre.com.br/p/MLB8901234  # SSD NVMe 1TB Kingston KC3000
-# https://www.mercadolivre.com.br/p/MLB9012345  # HD Externo 2TB Seagate
-
-# Monitores
-# https://www.mercadolivre.com.br/p/MLB0123456  # Monitor Samsung 27 144Hz
-# https://www.mercadolivre.com.br/p/MLB1122334  # Monitor LG UltraGear 24
-# https://www.mercadolivre.com.br/p/MLB2233445  # Monitor Dell 27 4K
-
-# ===== CASA E CONSTRUCAO =====
-# Iluminacao Inteligente
-# https://www.mercadolivre.com.br/p/MLB3344556  # Lampada Smart WiFi 10W RGB
-# https://www.mercadolivre.com.br/p/MLB4455667  # Fita LED Smart 5m
-# https://www.mercadolivre.com.br/p/MLB5566778  # Spot LED Smart 7W
-
-# Eletrodomesticos
-# https://www.mercadolivre.com.br/p/MLB6677889  # Air Fryer 5L Mondial
-# https://www.mercadolivre.com.br/p/MLB7788990  # Aspirador Robo Xiaomi
-# https://www.mercadolivre.com.br/p/MLB8899001  # Liquidificador Philco 1400W
-
-# Ferramentas Eletricas
-# https://www.mercadolivre.com.br/p/MLB9900112  # Parafusadeira Bosch 12V
-# https://www.mercadolivre.com.br/p/MLB0011223  # Furadeira Impacto Bosch
-# https://www.mercadolivre.com.br/p/MLB1122334  # Serra Circular 7-1/4
-
-# ===== FERRAMENTAS =====
-# Conjuntos
-# https://www.mercadolivre.com.br/p/MLB2233445  # Jogo Chaves Combinadas 26p
-# https://www.mercadolivre.com.br/p/MLB3344556  # Kit Chaves de Fenda 20p
-# https://www.mercadolivre.com.br/p/MLB4455667  # Jogo Soquetes 1/2 40p
-
-# Medicao
-# https://www.mercadolivre.com.br/p/MLB5566778  # Nivel Laser Bosch 360
-# https://www.mercadolivre.com.br/p/MLB6677889  # Trena Laser 50m
-# https://www.mercadolivre.com.br/p/MLB7788990  # Multimetro Digital Fluke
-
-# ===== TECNOLOGIA E ELETRONICOS =====
-# Audio
-# https://www.mercadolivre.com.br/p/MLB8899001  # Fone Bluetooth JBL Tune 510
-# https://www.mercadolivre.com.br/p/MLB9900112  # Fone TWS Samsung Buds2
-# https://www.mercadolivre.com.br/p/MLB0011223  # Headset Gamer HyperX Cloud
-
-# Carregadores
-# https://www.mercadolivre.com.br/p/MLB1122334  # Carregador GaN 65W Baseus
-# https://www.mercadolivre.com.br/p/MLB2233445  # Power Bank 20000mAh Anker
-# https://www.mercadolivre.com.br/p/MLB3344556  # Carregador Wireless 15W
-
-# Wearables
-# https://www.mercadolivre.com.br/p/MLB4455667  # Smartwatch Samsung Galaxy Watch
-# https://www.mercadolivre.com.br/p/MLB5566778  # Xiaomi Band 8 Pro
-# https://www.mercadolivre.com.br/p/MLB6677889  # Apple Watch SE
-
-# Celulares
-# https://www.mercadolivre.com.br/p/MLB7788990  # Samsung Galaxy A15 128GB
-# https://www.mercadolivre.com.br/p/MLB8899001  # Motorola Edge 40 Neo
-# https://www.mercadolivre.com.br/p/MLB9900112  # iPhone 13 128GB
-
-# TVs
-# https://www.mercadolivre.com.br/p/MLB0011223  # Smart TV Samsung 50 Crystal UHD
-# https://www.mercadolivre.com.br/p/MLB1122334  # Smart TV LG 43 NanoCell
-# https://www.mercadolivre.com.br/p/MLB2233445  # Smart TV TCL 55 QLED
-
 # ===== PRODUTOS ATIVOS (IDs VALIDOS) =====
 # Aspirador WAP GTW Inox 12L 1400W
 https://www.mercadolivre.com.br/p/MLB6339958
@@ -83,6 +9,6 @@ https://www.mercadolivre.com.br/p/MLB6339958
 # Refletor LED Lumanti 100W
 https://www.mercadolivre.com.br/p/MLB70273909
 
-# ===== BUSCA POR TERMOS GENERICOS (configuravel no orquestrador) =====
+# ===== BUSCA POR TERMOS GENERICOS =====
 # O crawler tambem fara buscas por termos genericos para encontrar novos produtos
 # Termos configurados em: src/afiliados/orquestrador.py -> rodar(termo=...)
