@@ -116,6 +116,7 @@ def _processar_produto(
             link=link_original,
             agora=agora,
             plataforma=plataforma,
+            imagem=produto.get("imagem"),
         )
         return None
 
@@ -130,6 +131,7 @@ def _processar_produto(
         link=link_original,
         agora=agora,
         plataforma=plataforma,
+        imagem=produto.get("imagem"),
     )
 
     # Filtro: queda não atinge o limite
@@ -182,6 +184,7 @@ def _processar_produto(
         "queda_pct": round(queda_pct, 2),
         "link": link_afiliado,
         "plataforma": plataforma,
+        "imagem": produto.get("imagem"),
     }
     armazenamento.salvar_oferta(oferta)
 

@@ -170,6 +170,7 @@ def salvar_produto(
     link: str,
     agora: datetime,
     plataforma: str = "mercado_livre",
+    imagem: str | None = None,
 ) -> None:
     """
     Insere ou atualiza (upsert) produto em produtos_rastreados.
@@ -182,6 +183,7 @@ def salvar_produto(
         link: Link do produto.
         agora: Timestamp da atualização.
         plataforma: Nome da plataforma ("mercado_livre", "shopee").
+        imagem: URL da imagem do produto (opcional).
     """
     logger.debug(
         "Salvando produto: id=%s, titulo=%s, preco_novo=%.2f, plataforma=%s",
@@ -200,6 +202,8 @@ def salvar_produto(
         "ultima_atualizacao": agora.isoformat(),
         "plataforma": plataforma,
     }
+    if imagem:
+        payload["imagem"] = imagem
 
     _requisicao(
         "POST",
