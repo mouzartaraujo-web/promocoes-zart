@@ -11,7 +11,7 @@ const SUPABASE_CONFIG = window.SUPABASE_CONFIG || {
     url: 'https://innyohbvgtsoihooykxp.supabase.co',
     anonKey: '',
     table: 'ofertas_encontradas',
-    select: 'produto_id,titulo,preco_anterior,preco_novo,queda_pct,link,criado_em,plataforma',
+    select: 'produto_id,titulo,preco_anterior,preco_novo,queda_pct,link,criado_em,plataforma,imagem',
     order: 'criado_em.desc',
     limit: 200
 };
@@ -288,7 +288,33 @@ function updateResultsInfo() {
 
     if (elements.lastUpdate) {
         if (allOffers.length > 0) {
-            elements.lastUpdate.textContent = `Atualizado ${formatRelativeTime(allOffers[0].criado_em)}`;
+            // Fetch last update from produtos_rastreados for accurate "Atualizado" timestamp
+            try {
+                const config = SUPABASE_CONFIG;
+                const url = `${config.url}/rest/v1/produtos_rastreados?select=ultima_atualizacao&order=ultima_atualizacao.desc&limit=1`;
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': SUPABASE_CONFIG.anonKey,
+                        'Authorization': `Bearer ${SUPABASE_CONFIG.anonKey}`,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.length > 0 && data[0].ultima_atualizacao) {
+                        elements.lastUpdate.textContent = `Atualizado ${formatRelativeTime(data[0].ultima_atualizacao)}`;
+                    } else {
+                        elements.lastUpdate.textContent = `Atualizado ${formatRelativeTime(allOffers[0].criado_em)}`;
+                    }
+                } else {
+                    elements.lastUpdate.textContent = `Atualizado ${formatRelativeTime(allOffers[0].criado_em)}`;
+                }
+            } catch (e) {
+                console.warn('Could not fetch last update time:', e);
+                elements.lastUpdate.textContent = `Atualizado ${formatRelativeTime(allOffers[0].criado_em)}`;
+            }
         } else {
             elements.lastUpdate.textContent = '';
         }

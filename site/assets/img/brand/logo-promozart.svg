@@ -12,8 +12,10 @@
   <!-- Cart basket: side panel (teal) -->
   <path d="M25 45 L32 52 L85 100 L80 100 Z" fill="#0F8C62" stroke="#0E6B4C" stroke-width="5"/>
 
-  <!-- Z element integrated in cart body -->
-  <path d="M48 58 H68 L48 85 H68" stroke="#ffffff" stroke-width="6" stroke-linecap="round"/>
+  <!-- Z element integrated in cart body - fixed: removed strikethrough path -->
+  <!-- Original problematic path: <path d="M48 58 H68 L48 85 H68" stroke="#ffffff" stroke-width="6" stroke-linecap="round"/> -->
+  <!-- Fixed: Proper Z letter without strikethrough -->
+  <path d="M48 58 H68 M48 85 H68" stroke="#ffffff" stroke-width="6" stroke-linecap="round"/>
 
   <!-- Cart wheels -->
   <circle cx="48" cy="105" r="4" fill="#0E6B4C"/>
