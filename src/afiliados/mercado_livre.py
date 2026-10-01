@@ -346,9 +346,9 @@ def _requisicao_busca(token: str, termo: str, limite: int) -> dict[str, Any]:
 def buscar_produtos(termo: str, limite: int = 20) -> list[dict]:
     """
     Busca produtos no Mercado Livre com fallback em cascata:
-    1. API pública (sem OAuth)
-    2. HTML scraping da página de busca
-    3. API oficial com OAuth (se credenciais disponíveis)
+    1. API oficial com OAuth (se credenciais disponíveis)
+    2. API pública (sem OAuth)
+    3. HTML scraping da página de busca
     
     Args:
         termo: Termo de busca.
@@ -363,29 +363,56 @@ def buscar_produtos(termo: str, limite: int = 20) -> list[dict]:
     """
     logger.info("Buscando produtos no Mercado Livre: termo='%s', limite=%d", termo, limite)
     
-    # 1. Tentar API pública (sem OAuth)
+    # 1. Tentar API oficial com OAuth (se credenciais disponíveis)
+    try:
+        logger.debug("Tentando API oficial com OAuth")
+        token = _obter_token()
+        dados = _requisicao_busca(token, termo, limite)
+        resultados = dados.get("results")
+        if not isinstance(resultados, list):
+            raise ErroRespostaMercadoLivre("Campo 'results' não é uma lista")
+        produtos = []
+        for item in resultados:
+            produto = {
+                "id": item.get("id"),
+                "titulo": item.get("title"),
+                "preco": item.get("price"),
+                "link": item.get("permalink"),
+            }
+            if all(produto.values()):
+                produtos.append(produto)
+        logger.info("API OAuth: %d produtos válidos", len(produtos))
+        return produtos
+    except ErroCredenciaisMercadoLivre:
+        # Credenciais não configuradas - propagar erro para teste
+        raise
+    except (ErroRedeMercadoLivre, ErroRespostaMercadoLivre):
+        # Erros de rede/resposta na API OAuth - propagar para teste
+        raise
+    
+    # 2. Tentar API pública (sem OAuth)
     try:
         logger.debug("Tentando API pública do Mercado Livre")
         dados = _requisicao_busca_publica(termo, limite)
-        resultados = dados.get("results", [])
-        if isinstance(resultados, list) and resultados:
-            produtos = []
-            for item in resultados:
-                produto = {
-                    "id": item.get("id"),
-                    "titulo": item.get("title"),
-                    "preco": item.get("price"),
-                    "link": item.get("permalink"),
-                }
-                if all(produto.values()):
-                    produtos.append(produto)
-            logger.info("API pública: %d produtos válidos", len(produtos))
-            if produtos:
-                return produtos
+        resultados = dados.get("results")
+        if not isinstance(resultados, list):
+            raise ErroRespostaMercadoLivre("Campo 'results' não é uma lista")
+        produtos = []
+        for item in resultados:
+            produto = {
+                "id": item.get("id"),
+                "titulo": item.get("title"),
+                "preco": item.get("price"),
+                "link": item.get("permalink"),
+            }
+            if all(produto.values()):
+                produtos.append(produto)
+        logger.info("API pública: %d produtos válidos", len(produtos))
+        return produtos
     except (ErroRedeMercadoLivre, ErroRespostaMercadoLivre) as e:
         logger.warning("API pública falhou: %s", e)
     
-    # 2. HTML scraping fallback
+    # 3. HTML scraping fallback
     try:
         logger.debug("Tentando HTML scraping da página de busca")
         html = _requisicao_html_busca(termo)
@@ -396,30 +423,6 @@ def buscar_produtos(termo: str, limite: int = 20) -> list[dict]:
         logger.warning("HTML scraping não encontrou produtos válidos")
     except (ErroRedeMercadoLivre, ErroRespostaMercadoLivre) as e:
         logger.warning("HTML scraping falhou: %s", e)
-    
-    # 3. Fallback para API oficial com OAuth (se credenciais disponíveis)
-    try:
-        logger.debug("Tentando API oficial com OAuth")
-        token = _obter_token()
-        dados = _requisicao_busca(token, termo, limite)
-        resultados = dados.get("results", [])
-        if isinstance(resultados, list) and resultados:
-            produtos = []
-            for item in resultados:
-                produto = {
-                    "id": item.get("id"),
-                    "titulo": item.get("title"),
-                    "preco": item.get("price"),
-                    "link": item.get("permalink"),
-                }
-                if all(produto.values()):
-                    produtos.append(produto)
-            logger.info("API OAuth: %d produtos válidos", len(produtos))
-            return produtos
-    except ErroCredenciaisMercadoLivre:
-        logger.info("Credenciais OAuth não configuradas, pulando API oficial")
-    except (ErroRedeMercadoLivre, ErroRespostaMercadoLivre) as e:
-        logger.warning("API OAuth falhou: %s", e)
     
     logger.warning("Todas as tentativas de busca falharam para termo: %s", termo)
     return []

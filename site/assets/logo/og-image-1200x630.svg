@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img" aria-label="PromoZart - A promoção à frente">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0F1714;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#141414;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0E6B4C;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#14A85E;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bgGrad)"/>
+  
+  <!-- Decorative elements -->
+  <circle cx="150" cy="100" r="200" fill="url(#logoGrad)" opacity="0.05"/>
+  <circle cx="1050" cy="530" r="300" fill="url(#logoGrad)" opacity="0.03"/>
+  
+  <!-- Main content area -->
+  <g transform="translate(120, 180)">
+    <!-- Logo symbol -->
+    <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Cart handle -->
+      <path d="M35 20 C50 5, 70 5, 85 20" stroke="url(#logoGrad)" stroke-width="12" fill="none"/>
+      <!-- Cart basket: front panel -->
+      <path d="M25 45 H115 L85 100 H35 L25 45 Z" fill="#ffffff" stroke="url(#logoGrad)" stroke-width="10"/>
+      <!-- Cart basket: side panel -->
+      <path d="M25 45 L32 52 L85 100 L80 100 Z" fill="#0F8C62" stroke="#0E6B4C" stroke-width="7"/>
+      <!-- Z element -->
+      <path d="M48 58 H68 M48 85 H68" stroke="#ffffff" stroke-width="10" stroke-linecap="round"/>
+      <!-- Cart wheels -->
+      <circle cx="48" cy="105" r="6" fill="#0E6B4C"/>
+      <circle cx="82" cy="105" r="6" fill="#0E6B4C"/>
+    </g>
+    
+    <!-- Text -->
+    <text x="180" y="80" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="700" font-size="72" fill="#ffffff" letter-spacing="-1">Promo</text>
+    <text x="340" y="80" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="700" font-size="72" fill="url(#logoGrad)" letter-spacing="-1">Z</text>
+    <text x="400" y="80" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="700" font-size="72" fill="#ffffff" letter-spacing="-1">art</text>
+    
+    <!-- Tagline -->
+    <text x="180" y="160" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="400" font-size="28" fill="#14A85E" letter-spacing="0.5">A promoção à frente</text>
+    
+    <!-- Features -->
+    <g font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="20" fill="#cccccc">
+      <text x="180" y="240">✓ Preços reais verificados</text>
+      <text x="180" y="280">✓ Atualização automática contínua</text>
+      <text x="180" y="320">✓ Links diretos para lojas oficiais</text>
+      <text x="180" y="360">✓ Sem cadastro, sem spam</text>
+    </g>
+    
+    <!-- CTA -->
+    <rect x="180" y="420" width="300" height="60" rx="12" fill="url(#logoGrad)"/>
+    <text x="330" y="458" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="700" font-size="24" fill="#ffffff" text-anchor="middle">Ver ofertas agora</text>
+    
+    <!-- URL -->
+    <text x="600" y="580" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="400" font-size="18" fill="#666666" text-anchor="middle">promocoes-zart.pages.dev</text>
+  </g>
+</svg>
