@@ -178,10 +178,10 @@ def _extrair_dados_catalogo(data: dict[str, Any]) -> dict[str, Any]:
     if "pictures" in data and data["pictures"]:
         for pic in data["pictures"]:
             if isinstance(pic, dict) and pic.get("url"):
-                resultado["imagem"] = pic["url"]
+                resultado["imagem"] = _normalizar_url_imagem(pic["url"])
                 break
             elif isinstance(pic, str):
-                resultado["imagem"] = pic
+                resultado["imagem"] = _normalizar_url_imagem(pic)
                 break
 
     # Marca
@@ -304,14 +304,14 @@ def _extrair_dados_item(data: dict[str, Any]) -> dict[str, Any]:
         resultado["preco"] = _normalizar_preco(data["price"])
 
     if "thumbnail" in data:
-        resultado["imagem"] = data["thumbnail"]
+        resultado["imagem"] = _normalizar_url_imagem(data["thumbnail"])
     elif "pictures" in data and data["pictures"]:
         for pic in data["pictures"]:
             if isinstance(pic, dict) and pic.get("url"):
-                resultado["imagem"] = pic["url"]
+                resultado["imagem"] = _normalizar_url_imagem(pic["url"])
                 break
             elif isinstance(pic, str):
-                resultado["imagem"] = pic
+                resultado["imagem"] = _normalizar_url_imagem(pic)
                 break
 
     if "seller_id" in data:
@@ -450,7 +450,7 @@ def _extrair_opengraph(soup: BeautifulSoup) -> dict[str, Any]:
             except ValueError:
                 pass
         elif prop == "og:image":
-            dados["image"] = content_str
+            dados["image"] = _normalizar_url_imagem(content_str)
         elif prop == "og:url":
             dados["url"] = content_str
 
@@ -463,7 +463,7 @@ def _extrair_opengraph(soup: BeautifulSoup) -> dict[str, Any]:
         if name == "twitter:title" and "title" not in dados:
             dados["title"] = content_str
         elif name == "twitter:image" and "image" not in dados:
-            dados["image"] = content_str
+            dados["image"] = _normalizar_url_imagem(content_str)
 
     # Product-specific meta tags (ML usa estes)
     product_price = soup.find("meta", property="product:price:amount")
@@ -475,6 +475,20 @@ def _extrair_opengraph(soup: BeautifulSoup) -> dict[str, Any]:
             pass
 
     return dados
+
+
+def _normalizar_url_imagem(url: str | None) -> str | None:
+    """Normaliza URL de imagem para HTTPS absoluto."""
+    if not url:
+        return None
+    url = str(url).strip()
+    if url.startswith("//"):
+        return "https:" + url
+    if url.startswith("http://"):
+        return "https" + url[4:]
+    if url.startswith("https://"):
+        return url
+    return None
 
 
 def _normalizar_preco(valor: Any) -> float | None:
@@ -556,9 +570,9 @@ def _extrair_dados_json_ld(produto_json: dict[str, Any]) -> dict[str, Any]:
     image = produto_json.get("image")
     if image:
         if isinstance(image, list) and image:
-            dados["imagem"] = image[0]
+            dados["imagem"] = _normalizar_url_imagem(image[0])
         elif isinstance(image, str):
-            dados["imagem"] = image
+            dados["imagem"] = _normalizar_url_imagem(image)
 
     # Descrição
     if "description" in produto_json:
@@ -721,7 +735,7 @@ def _extrair_imagem_html(soup: BeautifulSoup) -> str | None:
                     # Se for srcset, pega a primeira URL
                     if attr == "data-srcset":
                         src = src.split(",")[0].split()[0]
-                    return src
+                    return _normalizar_url_imagem(src)
 
     return None
 
@@ -734,7 +748,7 @@ def _extrair_dados_opengraph(dados_og: dict[str, Any]) -> dict[str, Any]:
     if "price" in dados_og:
         resultado["preco"] = dados_og["price"]
     if "image" in dados_og:
-        resultado["imagem"] = dados_og["image"]
+        resultado["imagem"] = _normalizar_url_imagem(dados_og["image"])
     if "url" in dados_og:
         resultado["link"] = dados_og["url"]
     return resultado

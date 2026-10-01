@@ -169,12 +169,16 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+    min-width: 0; /* prevent flex item overflow */
+    flex-shrink: 0;
+    padding-right: 1rem; /* ensure logo has space from adjacent elements */
 }
 
 .logo-img {
     height: 60px;
     width: auto;
     display: block;
+    flex-shrink: 0; /* prevent logo from shrinking */
 }
 
 .logo-text {
