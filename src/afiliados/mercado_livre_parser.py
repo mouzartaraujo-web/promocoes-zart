@@ -51,7 +51,11 @@ ML_CATALOG_URL_PATTERN = re.compile(
 )
 
 ML_SHORT_URL_PATTERN = re.compile(
-    r"https?://(?:[^/]+\.)?(?:ml\.com\.br|mercadolivre\.com\.br/sec)/"
+    r"https?://(?:[^/]+\.)?(?:meli\.la|mercadolivre\.com\.br/sec|ml\.com\.br|www\.ml\.com\.br)/"
+)
+
+ML_SHORT_URL_WITH_ID = re.compile(
+    r"https?://(?:[^/]+\.)?(?:meli\.la|mercadolivre\.com\.br/sec|ml\.com\.br|www\.ml\.com\.br)/([A-Za-z0-9]+)"
 )
 
 ML_ALLOWED_DOMAINS = (
@@ -59,6 +63,7 @@ ML_ALLOWED_DOMAINS = (
     "www.mercadolivre.com.br",
     "ml.com.br",
     "www.ml.com.br",
+    "meli.la",
 )
 
 
@@ -322,15 +327,59 @@ def _extrair_dados_item(data: dict[str, Any]) -> dict[str, Any]:
 
 def _extrair_id_da_url(url: str) -> str | None:
     """Extrai o ID do produto (MLBxxxxxx) da URL."""
+    # 1. URL padrão /MLB-XXXXXX ou /MLBXXXXXX
     match = ML_PRODUCT_URL_PATTERN.search(url)
     if match:
         return f"MLB{match.group(1)}"
 
+    # 2. URL de catálogo /p/MLB-XXXXXX
     match = ML_CATALOG_URL_PATTERN.search(url)
     if match:
         return f"MLB{match.group(1)}"
 
+    # 3. URLs curtas meli.la/XXXX ou mercadolivre.com.br/sec/XXXX
+    match = ML_SHORT_URL_WITH_ID.search(url)
+    if match:
+        short_code = match.group(1)
+        # Resolver URL curta seguindo redirects
+        try:
+            resolved_url = _resolver_short_url(f"https://meli.la/{match.group(1)}")
+            if resolved_url:
+                return _extrair_id_da_url(resolved_url)
+        except Exception:
+            pass
+
     return None
+
+
+def _resolver_short_url(short_url: str) -> str | None:
+    """
+    Resolve uma URL curta (meli.la/XXXX) seguindo redirects para obter a URL final.
+    
+    Args:
+        short_url: URL curta (ex: https://meli.la/abc123)
+    
+    Returns:
+        URL final resolvida ou None se falhar.
+    """
+    try:
+        headers = {
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/120.0.0.0 Safari/537.36"
+            ),
+        }
+        resposta = requests.get(
+            short_url,
+            headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"},
+            timeout=10,
+            allow_redirects=True
+        )
+        resposta.raise_for_status()
+        return str(resposta.url)
+    except Exception:
+        return None
 
 
 def _validar_url_mercado_livre(url: str) -> None:
