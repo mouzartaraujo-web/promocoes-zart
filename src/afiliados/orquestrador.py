@@ -240,6 +240,16 @@ def rodar(
     agora = datetime.now()
     ofertas_encontradas = []
 
+    # 1. Expirar ofertas antigas (preço normalizado ou sem atualização por 48h)
+    try:
+        expiradas = armazenamento.expirar_ofertas_desatualizadas(horas_sem_atualizacao=48)
+        if expiradas > 0:
+            logger.info("Expiradas %d ofertas antigas/normalizadas", expiradas)
+    except Exception as exc:
+        logger.warning("Erro ao expirar ofertas antigas: %s", exc)
+
+    ofertas_encontradas = []
+
     # Processa URLs do Mercado Livre se fornecidas
     if urls_mercado_livre:
         try:

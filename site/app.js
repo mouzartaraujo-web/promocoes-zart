@@ -455,13 +455,17 @@ function renderOffers(offers) {
 // API Functions
 // ========================================
 async function fetchOffers() {
-    const { url, anonKey, table, select, order, limit } = SUPABASE_CONFIG;
+    const { url, anonKey, table, select, order, limit, filter } = SUPABASE_CONFIG;
 
     const queryParams = new URLSearchParams({
         select,
         order,
         limit: String(limit)
     });
+
+    if (filter) {
+        queryParams.append('filter', filter);
+    }
 
     const apiUrl = `${url}/rest/v1/${table}?${queryParams.toString()}`;
 

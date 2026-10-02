@@ -252,37 +252,116 @@ def salvar_oferta(oferta: dict) -> None:
     logger.debug("Oferta salva com sucesso: %s", oferta["produto_id"])
 
 
-def oferta_recente_existe(produto_id: str, plataforma: str, horas: int = 24) -> bool:
+def buscar_ofertas_ativas(plataforma: str = "mercado_livre", limite: int = 200) -> list[dict]:
     """
-    Verifica se já existe uma oferta para este produto nas últimas N horas.
+    Busca apenas ofertas ativas (não expiradas).
 
     Args:
-        produto_id: ID do produto.
         plataforma: Nome da plataforma.
-        horas: Janela de tempo em horas (padrão: 24).
+        limite: Número máximo de resultados.
 
     Returns:
-        True se já existe oferta recente, False caso contrário.
+        Lista de ofertas ativas.
+    """
+    params = {
+        "select": "id,produto_id,titulo,preco_anterior,preco_novo,queda_pct,link,criado_em,plataforma,imagem",
+        "plataforma": f"eq.{plataforma}",
+        "ativa": "eq.true",
+        "order": "criado_em.desc",
+        "limit": str(limite),
+    }
+
+    resposta = _requisicao("GET", "ofertas_encontradas", params=params)
+    return resposta.json()
+
+
+def expirar_ofertas_desatualizadas(horas_sem_atualizacao: int = 48) -> int:
+    """
+    Marca como inativas as ofertas que não foram atualizadas nas últimas N horas
+    ou cujo preço atual voltou ao preço anterior (preço normalizado).
+
+    Args:
+        horas_sem_atualizacao: Horas sem atualização para considerar expirada (padrão: 48).
+
+    Returns:
+        Número de ofertas marcadas como expiradas.
     """
     from datetime import datetime, timedelta
 
-    cutoff = (datetime.now() - timedelta(hours=horas)).isoformat()
+    cutoff = (datetime.now() - timedelta(hours=horas_sem_atualizacao)).isoformat()
 
-    params = {
-        "select": "produto_id",
-        "produto_id": f"eq.{produto_id}",
-        "plataforma": f"eq.{plataforma}",
-        "criado_em": f"gte.{cutoff}",
-        "limit": "1",
+    # 1. Buscar ofertas ativas que não foram atualizadas nas últimas N horas
+    # (baseado no campo criado_em da oferta, já que não há campo atualizado_em)
+    cutoff_expirado = (datetime.now() - timedelta(hours=horas_sem_atualizacao)).isoformat()
+
+    params_select = {
+        "select": "id,produto_id,preco_anterior,preco_novo,criado_em",
+        "ativa": "eq.true",
+        "criado_em": f"lt.{cutoff_expirado}",
     }
 
     try:
-        resposta = _requisicao("GET", "ofertas_encontradas", params=params)
-        dados = resposta.json()
-        existe = len(dados) > 0
-        if existe:
-            logger.debug("Oferta recente já existe para %s (%s)", produto_id, plataforma)
-        return existe
+        resposta = _requisicao("GET", "ofertas_encontradas", params=params_select)
+        ofertas_antigas = resposta.json()
     except Exception as exc:
-        logger.warning("Erro ao verificar oferta recente: %s", exc)
-        return False
+        logger.warning("Erro ao buscar ofertas antigas: %s", exc)
+        return 0
+
+    if not ofertas_antigas:
+        return 0
+
+    # 2. Verificar quais ofertas têm preço normalizado (preço atual >= preço anterior)
+    ids_para_expirar = []
+    for oferta in ofertas_antigas:
+        preco_anterior = float(oferta.get("preco_anterior", 0))
+        preco_novo = float(oferta.get("preco_novo", 0))
+        if preco_novo >= preco_anterior and preco_anterior > 0:
+            ids_para_expirar.append(oferta["id"])
+
+    if not ids_para_expirar:
+        return 0
+
+    # 3. Marcar como expiradas
+    motivo = "preco_normalizado"
+    if len(ids_para_expirar) < len(ofertas_antigas):
+        motivo = "preco_normalizado,sem_atualizacao_48h"
+
+    # Atualizar em lote usando filtro in
+    ids_str = ",".join(ids_para_expirar)
+    payload = {
+        "ativa": False,
+        "expirada_em": datetime.now().isoformat(),
+        "motivo_expiracao": motivo,
+    }
+
+    try:
+        params_update = {"id": f"in.({ids_str})"}
+        _requisicao("PATCH", "ofertas_encontradas", json=payload, params=params_update)
+        logger.info("Expiradas %d ofertas (motivo: %s)", len(ids_para_expirar), motivo)
+        return len(ids_para_expirar)
+    except Exception as exc:
+        logger.warning("Erro ao expirar ofertas: %s", exc)
+        return 0
+
+
+def buscar_ofertas_ativas(plataforma: str = "mercado_livre", limite: int = 200) -> list[dict]:
+    """
+    Busca apenas ofertas ativas (não expiradas).
+
+    Args:
+        plataforma: Nome da plataforma.
+        limite: Número máximo de resultados.
+
+    Returns:
+        Lista de ofertas ativas.
+    """
+    params = {
+        "select": "id,produto_id,titulo,preco_anterior,preco_novo,queda_pct,link,criado_em,plataforma,imagem",
+        "plataforma": f"eq.{plataforma}",
+        "ativa": "eq.true",
+        "order": "criado_em.desc",
+        "limit": str(limite),
+    }
+
+    resposta = _requisicao("GET", "ofertas_encontradas", params=params)
+    return resposta.json()
